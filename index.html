@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -40,24 +41,57 @@
   }
   p { color: var(--text-muted); font-size: 0.9rem; letter-spacing: 1px;}
 
+  /* Контейнер таблицы */
   .table-container { 
     flex-grow: 1; display: flex; justify-content: center; align-items: flex-start; 
-    padding: 10px; overflow-x: auto; /* Добавил прокрутку по горизонтали, если не влезет */
+    padding: 10px; overflow: auto; 
   }
 
-  .periodic-table {
-    display: grid; 
-    /* Делаем ячейки адаптивными, чтобы они сжимались под экран телефона */
-    grid-template-columns: repeat(18, minmax(16px, 1fr)); 
-    grid-template-rows: repeat(7, minmax(26px, 1fr)); 
-    gap: 1px; 
-    width: 100%; 
-    max-width: 1000px;
-    transition: all 0.3s ease;
+  /* --- ВЕРСИЯ ДЛЯ ТЕЛЕФОНА (СПИСОК) --- */
+  .mobile-list {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 600px;
+    gap: 10px;
+  }
+  .mobile-item {
+    display: flex;
+    align-items: center;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 15px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .mobile-item:hover {
+    border-color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow);
+    background: #102445;
+  }
+  .mobile-item .num {
+    font-size: 0.8rem; color: var(--text-muted); width: 30px;
+  }
+  .mobile-item .sym {
+    font-size: 1.5rem; font-weight: 700; width: 50px; text-shadow: 0 0 5px var(--el-color);
+  }
+  .mobile-item .name {
+    font-size: 1.1rem; font-weight: 700; flex-grow: 1;
+  }
+  .mobile-item .arrow {
+    color: var(--accent); font-size: 1.2rem;
   }
 
+  /* --- ВЕРСИЯ ДЛЯ КОМПЬЮТЕРА (СЕТКА) --- */
+  .desktop-table {
+    display: none; /* Скрыто на телефоне */
+    grid-template-columns: repeat(18, 55px);
+    grid-template-rows: repeat(7, 65px);
+    gap: 4px;
+  }
   .element {
-    background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 2px;
+    background-color: var(--card-bg); border: 1px solid var(--border); border-radius: 4px;
     display: flex; flex-direction: column; justify-content: center; align-items: center;
     cursor: pointer; transition: all 0.15s; position: relative; user-select: none;
   }
@@ -65,11 +99,10 @@
     transform: scale(1.2); z-index: 10; border-color: var(--accent); 
     box-shadow: 0 0 15px var(--accent-glow); background-color: #102445; 
   }
+  .element .symbol { font-size: 1.2rem; font-weight: 700; color: #fff; text-shadow: 0 0 3px var(--el-color);}
+  .element .number { position: absolute; top: 4px; left: 6px; font-size: 0.65rem; color: var(--text-muted); }
 
-  .element .symbol { font-size: 0.9rem; font-weight: 700; color: #fff; text-shadow: 0 0 3px var(--el-color);}
-  .element .number { position: absolute; top: 2px; left: 2px; font-size: 0.5rem; color: var(--text-muted); }
-
-  /* Модальное окно */
+  /* --- МОДАЛЬНОЕ ОКНО --- */
   #modal-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(5, 10, 20, 0.9); z-index: 50; display: none; justify-content: center; align-items: center;
@@ -79,7 +112,7 @@
 
   .element-modal {
     background: var(--bg-panel); border: 2px solid var(--accent);
-    border-radius: 10px; width: 90%; max-width: 400px; padding: 20px;
+    border-radius: 10px; width: 90%; max-width: 450px; padding: 20px;
     box-shadow: 0 0 30px var(--accent-glow); position: relative;
   }
   .close-modal {
@@ -98,9 +131,16 @@
   .info-box span { display: block; font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase;}
   .info-box strong { font-size: 1.2rem; color: #fff; }
 
-  .modal-desc { line-height: 1.5; color: #b0d0f0; font-size: 1rem; }
+  .modal-desc { line-height: 1.5; color: #b0d0f0; font-size: 1rem; margin-bottom: 15px;}
 
-  /* Лаборатория */
+  .btn-synth {
+    width: 100%; background: transparent; color: var(--accent); border: 2px solid var(--accent);
+    padding: 10px; border-radius: 5px; font-family: 'Syncopate', sans-serif; font-weight: 700; cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-synth:hover { background: var(--accent); color: #000; }
+
+  /* --- ЛАБОРАТОРИЯ --- */
   .lab-panel {
     background: var(--bg-panel); border-top: 2px solid var(--border); padding: 15px;
     display: flex; justify-content: center; align-items: center; gap: 15px;
@@ -126,12 +166,11 @@
   #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--accent); opacity:0; pointer-events:none; z-index:100; transition: opacity 0.15s; }
   #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent); font-family: 'Syncopate', sans-serif; font-weight: bold; font-size: 1.2rem; z-index: 100;}
 
-  /* Медиа-запрос для планшетов и компьютеров (там можно сделать крупнее) */
-  @media (min-width: 800px) {
+  /* Медиа-запрос: на компьютере показываем сетку, скрываем список */
+  @media (min-width: 850px) {
     h1 { font-size: 2.5rem; }
-    .periodic-table { grid-template-columns: repeat(18, 55px); grid-template-rows: repeat(7, 65px); gap: 4px; width: auto; }
-    .element .symbol { font-size: 1.2rem; }
-    .element .number { font-size: 0.65rem; top: 4px; left: 6px; }
+    .mobile-list { display: none; }
+    .desktop-table { display: grid; }
     .flask { width: 60px; height: 80px; font-size: 1.2rem; }
     .lab-panel { padding: 20px; gap: 30px; }
     .mix-btn { padding: 12px 30px; font-size: 1rem; }
@@ -149,7 +188,10 @@
 <div id="loader">ИНИЦИАЛИЗАЦИЯ...</div>
 
 <div class="table-container">
-  <div class="periodic-table" id="table"></div>
+  <!-- Сетка для ПК -->
+  <div class="desktop-table" id="desktop-table"></div>
+  <!-- Список для телефона -->
+  <div class="mobile-list" id="mobile-list"></div>
 </div>
 
 <!-- Модальное окно -->
@@ -174,6 +216,9 @@
       </div>
     </div>
     <div class="modal-desc" id="m-desc">Описание элемента...</div>
+    
+    <!-- Кнопка добавления в лабораторию из карточки -->
+    <button class="btn-synth" id="modal-add-btn" onclick="addToLabFromModal()">ДОБАВИТЬ В СИНТЕЗ</button>
   </div>
 </div>
 
@@ -194,7 +239,7 @@ const CSV_REACTIONS = `https://docs.google.com/spreadsheets/d/${TABLE_ID}/export
 let elementsData = [];
 let reactionsData = [];
 let selectedForLab = [];
-let activeElement = null;
+let currentModalElement = null;
 
 async function loadData() {
   try {
@@ -268,11 +313,13 @@ function parseCSV(text) {
 
 function initUI() {
   document.getElementById('loader').style.display = 'none';
-  renderTable();
+  renderDesktopTable();
+  renderMobileList();
 }
 
-function renderTable() {
-  const table = document.getElementById('table');
+// --- ОТРИСОВКА ДЛЯ ПК (СЕТКА) ---
+function renderDesktopTable() {
+  const table = document.getElementById('desktop-table');
   for (let p = 1; p <= 7; p++) {
     for (let g = 1; g <= 18; g++) {
       const elData = elementsData.find(e => e.group === g && e.period === p);
@@ -286,29 +333,32 @@ function renderTable() {
           <div class="number">${elData.num}</div>
           <div class="symbol">${elData.sym}</div>
         `;
-        el.onclick = () => handleElementClick(elData, el);
+        el.onclick = () => openModal(elData);
         table.appendChild(el);
       }
     }
   }
 }
 
-function handleElementClick(data, htmlElement) {
-  const table = document.getElementById('table');
-  if (activeElement) activeElement.classList.remove('active');
-  htmlElement.classList.add('active');
-  activeElement = htmlElement;
-
-  showModal(data);
-
-  if (selectedForLab.length < 2) {
-    if (selectedForLab.length === 1 && selectedForLab[0] === data.sym) return;
-    selectedForLab.push(data.sym);
-    updateLabUI();
-  }
+// --- ОТРИСОВКА ДЛЯ ТЕЛЕФОНА (СПИСОК) ---
+function renderMobileList() {
+  const list = document.getElementById('mobile-list');
+  // Сортируем по номеру
+  const sorted = [...elementsData].sort((a, b) => a.num - b.num);
+  
+  list.innerHTML = sorted.map(elData => `
+    <div class="mobile-item" style="--el-color: ${elData.color};" onclick="openModalBySym('${elData.sym}')">
+      <div class="num">${elData.num}</div>
+      <div class="sym" style="color: ${elData.color};">${elData.sym}</div>
+      <div class="name">${elData.name}</div>
+      <div class="arrow">→</div>
+    </div>
+  `).join('');
 }
 
-function showModal(data) {
+// --- МОДАЛЬНОЕ ОКНО ---
+function openModal(data) {
+  currentModalElement = data;
   document.getElementById('m-symbol').innerText = data.sym;
   document.getElementById('m-name').innerText = data.name;
   document.getElementById('m-num').innerText = data.num;
@@ -316,17 +366,32 @@ function showModal(data) {
   document.getElementById('m-group').innerText = data.group;
   document.getElementById('m-period').innerText = data.period;
   document.getElementById('m-desc').innerText = data.desc;
+  
   document.getElementById('modal-overlay').classList.add('active');
+}
+
+function openModalBySym(sym) {
+  const elData = elementsData.find(e => e.sym === sym);
+  if (elData) openModal(elData);
 }
 
 function closeModal(event) {
   if (event.target.id === 'modal-overlay' || event.target.className === 'close-modal') {
     document.getElementById('modal-overlay').classList.remove('active');
-    if (activeElement) {
-      activeElement.classList.remove('active');
-      activeElement = null;
-    }
   }
+}
+
+// Добавление в синтез из карточки
+function addToLabFromModal() {
+  if (!currentModalElement) return;
+  if (selectedForLab.length >= 2) {
+    selectedForLab = []; // Сбрасываем, если уже 2
+  }
+  if (selectedForLab.includes(currentModalElement.sym)) return;
+  
+  selectedForLab.push(currentModalElement.sym);
+  updateLabUI();
+  closeModal({ target: { id: 'modal-overlay' } });
 }
 
 function updateLabUI() {
@@ -339,6 +404,7 @@ function updateLabUI() {
   flask2.innerText = selectedForLab[1] || '?';
   flask1.className = selectedForLab[0] ? 'flask filled' : 'flask';
   flask2.className = selectedForLab[1] ? 'flask filled' : 'flask';
+  
   mixBtn.disabled = selectedForLab.length !== 2;
   result.innerText = '...';
   result.style.color = 'var(--accent)';
