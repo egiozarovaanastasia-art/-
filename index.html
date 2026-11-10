@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Периодическая система | Sci-Fi Lab</title>
+<!-- Подключаем шрифты: строгий для текста и рубленый для заголовков -->
+<link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@400;700&family=Syncopate:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #050a14;
+    --bg-panel: #0a1428;
+    --accent: #00EAFF;
+    --accent-glow: rgba(0, 234, 255, 0.4);
+    --text: #e0f0ff;
+    --text-muted: #5a7a9a;
+    --card-bg: #0f1c35;
+    --border: #1c3a6b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body { 
+    font-family: 'Roboto Condensed', sans-serif;
+    background-color: var(--bg-dark);
+    color: var(--text); 
+    min-height: 100vh; 
+    display: flex; 
+    flex-direction: column;
+    overflow-x: hidden;
+    /* Фон с сеткой и градиентами */
+    background-image: 
+      linear-gradient(rgba(0, 234, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 234, 255, 0.03) 1px, transparent 1px),
+      radial-gradient(circle at 50% 0%, #0a1e3d 0%, var(--bg-dark) 70%);
+    background-size: 30px 30px, 30px 30px, 100% 100%;
+  }
+
+  header { 
+    text-align: center; 
+    padding: 30px 20px; 
+    border-bottom: 1px solid var(--border);
+    background: rgba(5, 10, 20, 0.8);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+  }
+  
+  h1 { 
+    font-family: 'Syncopate', sans-serif;
+    font-size: 2.5rem; 
+    font-weight: 700; 
+    letter-spacing: 4px; 
+    color: #fff; 
+    margin-bottom: 10px;
+    text-shadow: 0 0 10px var(--accent), 0 0 20px var(--accent-glow);
+  }
+  p { color: var(--text-muted); font-size: 1.1rem; letter-spacing: 1px;}
+
+  /* Контейнер таблицы */
+  .table-container {
+    flex-grow: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: auto;
+  }
+
+  .periodic-table {
+    display: grid;
+    grid-template-columns: repeat(18, minmax(40px, 65px));
+    grid-template-rows: repeat(7, minmax(40px, 65px));
+    gap: 6px;
+    transition: all 0.3s ease;
+  }
+
+  /* Карточка элемента */
+  .element {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 4px; /* Более угловатые формы для Sci-Fi */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    user-select: none;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+  }
+
+  .element:hover {
+    transform: scale(1.15);
+    z-index: 10;
+    border-color: var(--accent);
+    box-shadow: 0 0 15px var(--accent-glow), inset 0 0 10px var(--accent-glow);
+    background-color: #102445;
+  }
+
+  .element .symbol { font-size: 1.4rem; font-weight: 700; color: #fff; text-shadow: 0 0 5px var(--el-color);}
+  .element .number { position: absolute; top: 4px; left: 6px; font-size: 0.65rem; color: var(--text-muted); }
+  .element .name { font-size: 0.55rem; color: var(--text-muted); text-align: center; padding: 0 2px; line-height: 1; text-transform: uppercase;}
+
+  /* Эффект фокуса */
+  .periodic-table.has-focus .element:not(.active) {
+    opacity: 0.15;
+    filter: blur(3px);
+    transform: scale(0.9);
+  }
+  .element.active {
+    transform: scale(1.6) !important;
+    z-index: 20;
+    border-color: var(--accent);
+    box-shadow: 0 0 30px var(--accent), inset 0 0 20px var(--accent);
+    background-color: #0a1428;
+  }
+  .element.active .symbol { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
+  .element.active .name { color: #fff; }
+  .element.active .number { color: var(--accent); }
+
+  /* --- ЛАБОРАТОРИЯ --- */
+  .lab-panel {
+    background: var(--bg-panel);
+    border-top: 2px solid var(--border);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.6);
+    position: relative;
+    z-index: 30;
+  }
+
+  .flask {
+    width: 60px; height: 80px;
+    border: 2px solid var(--text-muted);
+    border-radius: 5px 5px 30px 30px; /* Форма колбы */
+    display: flex; justify-content: center; align-items: center;
+    font-family: 'Syncopate', sans-serif;
+    font-weight: 700; font-size: 1.2rem; color: #fff;
+    background: rgba(0,0,0,0.5);
+    transition: all 0.3s;
+    position: relative;
+  }
+  /* Блик на колбе */
+  .flask::after {
+    content: ''; position: absolute; top: 5px; right: 10px; width: 5px; height: 20px;
+    background: rgba(255,255,255,0.2); border-radius: 5px; transform: rotate(15deg);
+  }
+
+  .flask.filled { 
+    border-color: var(--accent); 
+    background: rgba(0, 234, 255, 0.1); 
+    box-shadow: 0 0 20px var(--accent-glow), inset 0 0 20px var(--accent-glow); 
+    color: var(--accent);
+  }
+
+  .mix-btn {
+    background: transparent; 
+    color: var(--accent); 
+    border: 2px solid var(--accent); 
+    padding: 12px 30px;
+    border-radius: 4px; 
+    font-family: 'Syncopate', sans-serif;
+    font-weight: 700; 
+    font-size: 1rem; 
+    cursor: pointer; 
+    transition: 0.2s;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .mix-btn:hover:not(:disabled) { 
+    background: var(--accent); 
+    color: #000; 
+    box-shadow: 0 0 25px var(--accent-glow); 
+  }
+  .mix-btn:disabled { 
+    border-color: #333; 
+    color: #333; 
+    cursor: not-allowed; 
+  }
+
+  .result-text { 
+    font-family: 'Syncopate', sans-serif;
+    font-size: 1.1rem; 
+    font-weight: 700; 
+    color: var(--accent); 
+    min-width: 200px; 
+    text-align: center; 
+    text-shadow: 0 0 10px var(--accent-glow);
+  }
+
+  #flash { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--accent); opacity:0; pointer-events:none; z-index:100; transition: opacity 0.15s; }
+
+  #loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: var(--accent); font-family: 'Syncopate', sans-serif; font-weight: bold; font-size: 1.5rem; z-index: 100; text-shadow: 0 0 10px var(--accent);}
+
+  /* Мобильная адаптация */
+  @media (max-width: 800px) {
+    .periodic-table { grid-template-columns: repeat(18, 32px); grid-template-rows: repeat(7, 38px); gap: 2px; }
+    .element .symbol { font-size: 0.9rem; }
+    .element .name { display: none; }
+    .element .number { font-size: 0.5rem; top: 2px; left: 3px; }
+    .element.active { transform: scale(1.8) !important; }
+    h1 { font-size: 1.5rem; letter-spacing: 2px; }
+    .lab-panel { flex-wrap: wrap; gap: 15px; padding: 15px; }
+    .flask { width: 45px; height: 60px; font-size: 1rem; }
+    .result-text { min-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ХИМИЧЕСКАЯ ЛАБОРАТОРИЯ</h1>
+  <p>Исследуйте элементы. Создавайте соединения.</p>
+</header>
+
+<div id="loader">ИНИЦИАЛИЗАЦИЯ...</div>
+
+<div class="table-container">
+  <div class="periodic-table" id="table"></div>
+</div>
+
+<div class="lab-panel">
+  <div class="flask" id="flask1">?</div>
+  <button class="mix-btn" id="mix-btn" onclick="mixElements()" disabled>СИНТЕЗ</button>
+  <div class="flask" id="flask2">?</div>
+  <div class="result-text" id="result">...</div>
+</div>
+
+<div id="flash"></div>
+
+<script>
+// ССЫЛКИ НА ЛИСТЫ ТВОЕЙ ТАБЛИЦЫ (уже вшиты)
+const TABLE_ID = "1Dov5UEqtbvFSiCtkswwLi4l6GRYwARy2lV8xqYSedRg";
+const CSV_ELEMENTS = `https://docs.google.com/spreadsheets/d/${TABLE_ID}/export?format=csv&gid=0`;
+const CSV_REACTIONS = `https://docs.google.com/spreadsheets/d/${TABLE_ID}/export?format=csv&sheet=Реакции`;
+
+let elementsData = [];
+let reactionsData = [];
+let selectedForLab = [];
+let activeElement = null;
+
+async function loadData() {
+  try {
+    const resEl = await fetch(CSV_ELEMENTS);
+    const csvEl = await resEl.text();
+    const rowsEl = parseCSV(csvEl);
+    
+    const hEl = rowsEl[0].map(h => h.trim().toLowerCase());
+    const idxSym = hEl.indexOf('символ');
+    const idxName = hEl.indexOf('название');
+    const idxNum = hEl.indexOf('номер');
+    const idxGroup = hEl.indexOf('группа');
+    const idxPeriod = hEl.indexOf('период');
+    const idxColor = hEl.indexOf('цвет');
+
+    elementsData = rowsEl.slice(1).filter(r => r[idxSym]).map(r => ({
+      sym: r[idxSym].trim(),
+      name: r[idxName] ? r[idxName].trim() : "",
+      num: parseInt(r[idxNum]) || 0,
+      group: parseInt(r[idxGroup]) || 0,
+      period: parseInt(r[idxPeriod]) || 0,
+      color: r[idxColor] ? r[idxColor].trim() : "#00EAFF"
+    }));
+
+    try {
+      const resRe = await fetch(CSV_REACTIONS);
+      const csvRe = await resRe.text();
+      const rowsRe = parseCSV(csvRe);
+      const hRe = rowsRe[0].map(h => h.trim().toLowerCase());
+      const idxE1 = hRe.indexOf('элемент 1');
+      const idxE2 = hRe.indexOf('элемент 2');
+      const idxRes = hRe.indexOf('результат');
+
+      if (idxE1 !== -1) {
+        reactionsData = rowsRe.slice(1).filter(r => r[idxE1]).map(r => ({
+          el1: r[idxE1].trim(),
+          el2: r[idxE2] ? r[idxE2].trim() : "",
+          result: r[idxRes] ? r[idxRes].trim() : "Неизвестное соединение"
+        }));
+      }
+    } catch(e) { console.log("Ошибка загрузки реакций"); }
+
+    initUI();
+  } catch (error) {
+    document.getElementById('loader').innerText = "ОШИБКА ДОСТУПА К БАЗЕ ДАННЫХ";
+  }
+}
+
+function parseCSV(text) {
+  const rows = []; let row = []; let field = ''; let inQuotes = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"' && text[i+1] === '"') { field += '"'; i++; }
+      else if (c === '"') inQuotes = false;
+      else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ',') { row.push(field); field = ''; }
+      else if (c === '\n') { row.push(field); rows.push(row); row = []; field = ''; }
+      else if (c !== '\r') field += c;
+    }
+  }
+  if (field || row.length) { row.push(field); rows.push(row); }
+  return rows;
+}
+
+function initUI() {
+  document.getElementById('loader').style.display = 'none';
+  renderTable();
+}
+
+function renderTable() {
+  const table = document.getElementById('table');
+  for (let p = 1; p <= 7; p++) {
+    for (let g = 1; g <= 18; g++) {
+      const elData = elementsData.find(e => e.group === g && e.period === p);
+      if (elData) {
+        const el = document.createElement('div');
+        el.className = 'element';
+        el.style.gridColumn = g;
+        el.style.gridRow = p;
+        el.style.setProperty('--el-color', elData.color);
+        el.innerHTML = `
+          <div class="number">${elData.num}</div>
+          <div class="symbol">${elData.sym}</div>
+          <div class="name">${elData.name}</div>
+        `;
+        el.onclick = () => handleElementClick(elData, el);
+        table.appendChild(el);
+      }
+    }
+  }
+}
+
+function handleElementClick(data, htmlElement) {
+  const table = document.getElementById('table');
+  if (activeElement === htmlElement) {
+    htmlElement.classList.remove('active');
+    table.classList.remove('has-focus');
+    activeElement = null;
+    return;
+  }
+  if (activeElement) activeElement.classList.remove('active');
+  htmlElement.classList.add('active');
+  table.classList.add('has-focus');
+  activeElement = htmlElement;
+
+  if (selectedForLab.length < 2) {
+    if (selectedForLab.length === 1 && selectedForLab[0] === data.sym) return;
+    selectedForLab.push(data.sym);
+    updateLabUI();
+  }
+}
+
+function updateLabUI() {
+  const flask1 = document.getElementById('flask1');
+  const flask2 = document.getElementById('flask2');
+  const mixBtn = document.getElementById('mix-btn');
+  const result = document.getElementById('result');
+
+  flask1.innerText = selectedForLab[0] || '?';
+  flask2.innerText = selectedForLab[1] || '?';
+
+  flask1.className = selectedForLab[0] ? 'flask filled' : 'flask';
+  flask2.className = selectedForLab[1] ? 'flask filled' : 'flask';
+
+  mixBtn.disabled = selectedForLab.length !== 2;
+  result.innerText = '...';
+  result.style.color = 'var(--accent)';
+}
+
+function mixElements() {
+  if (selectedForLab.length !== 2) return;
+  const el1 = selectedForLab[0];
+  const el2 = selectedForLab[1];
+  const resultEl = document.getElementById('result');
+  const flash = document.getElementById('flash');
+
+  const reaction = reactionsData.find(r => 
+    (r.el1 === el1 && r.el2 === el2) || (r.el1 === el2 && r.el2 === el1)
+  );
+
+  flash.style.opacity = '0.8';
+  setTimeout(() => flash.style.opacity = '0', 150);
+
+  if (reaction) {
+    resultEl.innerText = reaction.result;
+    resultEl.style.color = 'var(--accent)';
+    resultEl.style.textShadow = '0 0 20px var(--accent)';
+    setTimeout(() => {
+      selectedForLab = [];
+      updateLabUI();
+      if (activeElement) {
+        activeElement.classList.remove('active');
+        document.getElementById('table').classList.remove('has-focus');
+        activeElement = null;
+      }
+    }, 3000);
+  } else {
+    resultEl.innerText = "НЕТ РЕАКЦИИ";
+    resultEl.style.color = "#FF0055";
+    resultEl.style.textShadow = '0 0 20px #FF0055';
+    setTimeout(() => {
+      selectedForLab = [];
+      updateLabUI();
+      if (activeElement) {
+        activeElement.classList.remove('active');
+        document.getElementById('table').classList.remove('has-focus');
+        activeElement = null;
+      }
+    }, 2000);
+  }
+}
+
+loadData();
+</script>
+</body>
+</html>
